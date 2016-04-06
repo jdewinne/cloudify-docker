@@ -17,8 +17,11 @@ ADD scripts /scripts
 RUN /scripts/sshd/sshd.sh && /usr/sbin/enable_insecure_key
 RUN /scripts/cron/cron.sh
 RUN /scripts/cfy.sh
-# RUN /scripts/cleanup.sh
+
+RUN yum -y clean all
+RUN rm -rf /tmp/* /var/tmp/*
 
 EXPOSE 22
 EXPOSE 80
+
 CMD ["/usr/sbin/init"]

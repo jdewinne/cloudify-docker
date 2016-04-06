@@ -5,11 +5,6 @@ SSHD_BUILD_PATH=/scripts/sshd
 ## Install the SSH server.
 yum -y install openssh-server openssh-clients sudo
 systemctl enable sshd.service
-#mkdir /var/run/sshd
-#mkdir /etc/service/sshd
-#touch /etc/service/sshd/down
-#cp $SSHD_BUILD_PATH/sshd.runit /etc/service/sshd/run
-#cp $SSHD_BUILD_PATH/sshd_config /etc/ssh/sshd_config
 
 ## Install default SSH key for root and app.
 mkdir -p /root/.ssh
