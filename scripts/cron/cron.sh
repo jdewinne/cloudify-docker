@@ -1,4 +1,4 @@
 #!/bin/bash
 
-yum -y install cronie
+yum -y -q install cronie
 systemctl enable crond.service

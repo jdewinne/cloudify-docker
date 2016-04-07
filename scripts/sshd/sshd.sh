@@ -3,7 +3,7 @@
 SSHD_BUILD_PATH=/scripts/sshd
 
 ## Install the SSH server.
-yum -y install openssh-server openssh-clients sudo
+yum -y -q install openssh-server openssh-clients sudo
 systemctl enable sshd.service
 
 ## Install default SSH key for root and app.
