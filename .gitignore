@@ -1,5 +1,4 @@
-crash.log
-dist
+.cloudify*
 *.zip
 logs
 *.srl

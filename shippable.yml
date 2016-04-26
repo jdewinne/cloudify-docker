@@ -1,0 +1,13 @@
+language: none
+
+build:
+   ci:
+       - docker build --rm -t pure/cfy .
+
+   on_success:
+       - docker push pure/cfy
+
+integrations:
+    hub:
+        - integrationName: pureDockerHub
+          type: docker
