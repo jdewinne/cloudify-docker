@@ -9,5 +9,5 @@ build:
 
 integrations:
     hub:
-        - integrationName: pureDockerHub
+        - integrationName: PureDockerHub
           type: docker
