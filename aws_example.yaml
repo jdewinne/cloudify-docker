@@ -1,0 +1,140 @@
+tosca_definitions_version: cloudify_dsl_1_2
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/3.4m4/types.yaml
+  - http://www.getcloudify.org/spec/aws-plugin/1.4/plugin.yaml
+  - http://www.getcloudify.org/spec/fabric-plugin/1.4/plugin.yaml
+
+inputs:
+
+  #############################
+  # Provider specific Inputs
+  #############################
+
+  aws_access_key_id:
+    type: string
+    default: ''
+
+  aws_secret_access_key:
+    type: string
+    default: ''
+
+  ec2_region_name:
+    type: string
+    default: 'eu-west-1'
+
+  use_existing_keypair:
+    type: boolean
+    default: false
+
+  keypair_name:
+    type: string
+    default: cfy-example
+
+  ssh_key_filename:
+    type: string
+    default: 'cfy-example-key.pem'
+
+  example_security_group_name:
+    type: string
+    default: 'cfy-example-sg'
+
+  example_server_name:
+    type: string
+    default: 'cfy-example'
+
+  ssh_user:
+    type: string
+    default: ubuntu
+
+  #########################################################
+  # Default AMI ID - Ubuntu 14.04 LTS in EU-West-1 region #
+  #########################################################
+  image_id:
+    type: string
+    default: ami-f95ef58a
+
+  instance_type:
+    type: string
+    default: t2.micro
+
+
+  #############################
+  # Agent Packages
+  #############################
+  agent_package_urls:
+    default:
+      ubuntu_trusty_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/Ubuntu-trusty-agent_3.4.0-m4-b393.tar.gz
+      ubuntu_precise_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/Ubuntu-precise-agent_3.4.0-m4-b393.tar.gz
+      centos_7x_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/centos-Core-agent_3.4.0-m4-b393.tar.gz
+      centos_6x_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/centos-Final-agent_3.4.0-m4-b393.tar.gz
+      redhat_7x_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/redhat-Maipo-agent_3.4.0-m4-b393.tar.gz
+      redhat_6x_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/redhat-Santiago-agent_3.4.0-m4-b393.tar.gz
+      cloudify_windows_agent: http://repository.cloudifysource.org/org/cloudify3/3.4.0/m4-RELEASE/cloudify-windows-agent_3.4.0-m4-b393.exe
+
+  dsl_resources:
+    description: >
+      Holds a set of dsl required resources
+    default:
+      - {'source_path': 'http://www.getcloudify.org/spec/aws-plugin/1.4/plugin.yaml', 'destination_path': '/spec/aws-plugin/1.4/plugin.yaml'}
+      - {'source_path': 'http://www.getcloudify.org/spec/fabric-plugin/1.4/plugin.yaml', 'destination_path': '/spec/fabric-plugin/1.4/plugin.yaml'}
+      - {'source_path': 'http://www.getcloudify.org/spec/diamond-plugin/1.3.2/plugin.yaml', 'destination_path': '/spec/diamond-plugin/1.3.2/plugin.yaml'}
+      - {'source_path': 'http://www.getcloudify.org/spec/cloudify/3.4m4/types.yaml', 'destination_path': '/spec/cloudify/3.4m4/types.yaml'}
+
+dsl_definitions:
+  aws_configuration: &aws_configuration
+    aws_access_key_id: { get_input: aws_access_key_id }
+    aws_secret_access_key: { get_input: aws_secret_access_key }
+    ec2_region_name: { get_input: ec2_region_name }
+
+node_templates:
+
+  example_keypair:
+    type: cloudify.aws.nodes.KeyPair
+    properties:
+      use_external_resource: { get_input: use_existing_keypair }
+      resource_id: { get_input: keypair_name }
+      private_key_path: { get_input: ssh_key_filename }
+      aws_config: *aws_configuration
+
+  example_security_group:
+    type: cloudify.aws.nodes.SecurityGroup
+    properties:
+      resource_id: { get_input: example_security_group_name }
+      use_external_resource: false
+      description: Cloudify Example Security group
+      rules:
+        - ip_protocol: tcp
+          from_port: 22
+          to_port: 22
+          cidr_ip: 0.0.0.0/0
+        - ip_protocol: tcp
+          from_port: 80
+          to_port: 80
+          cidr_ip: 0.0.0.0/0
+      aws_config: *aws_configuration
+
+  example_server_ip:
+    type: cloudify.aws.nodes.ElasticIP
+    properties:
+      aws_config: *aws_configuration
+
+  example_host:
+    type: cloudify.aws.nodes.Instance
+    properties:
+      resource_id: { get_input: example_server_name }
+      image_id: { get_input: image_id }
+      instance_type: { get_input: instance_type }
+      install_agent: false
+      aws_config: *aws_configuration
+    relationships:
+      - type: cloudify.aws.relationships.instance_connected_to_elastic_ip
+        target: example_server_ip
+      - type: cloudify.aws.relationships.instance_connected_to_keypair
+        target: example_keypair
+      - type: cloudify.aws.relationships.instance_connected_to_security_group
+        target: example_security_group
+
+outputs:
+  example_ip:
+    value: { get_attribute: [ example_server_ip, aws_resource_id ] }

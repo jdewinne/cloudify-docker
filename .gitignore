@@ -1,4 +1,5 @@
 .cloudify*
+local-storage*
 *.zip
 logs
 *.srl
