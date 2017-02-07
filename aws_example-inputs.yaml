@@ -1,2 +1,24 @@
-aws_access_key_id: ''
-aws_secret_access_key: ''
+aws_access_key_id: 'AKIAJDUNZHCCZZ32SVQQ'
+aws_secret_access_key: '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'
+
+# These are the key names in ec2 that will be created at bootstrap.
+# If existing key pairs are used (see below), bootstrap will use the provided names, and will not create new ones.
+manager_keypair_name: 'cloudify-manager-kp'
+agent_keypair_name: 'cloudify-agent-kp'
+
+use_existing_manager_group: true
+use_existing_agent_group: true
+
+# The bootstrap process creates 2 key pairs in order to connect to the management machine and application hosts.
+# Set these properties to true (one or both) if you want to use existing key pairs, and not create new ones.
+use_existing_manager_keypair: true
+use_existing_agent_keypair: true
+
+# These are the local paths where the key files will be created at bootstrap.
+# If existing key pairs are used (see above), the key files should be at these paths for cloudify to find.
+ssh_key_filename: '~/.ssh/cloudify-manager-kp.pem'
+agent_private_key_path: '~/.ssh/cloudify-agent-kp.pem'
+
+manager_security_group_name: 'sg-6324401f'
+agent_security_group_name: 'sg-bd2440c1'
+#manager_server_name: 'cloudify-manager-server'
